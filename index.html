@@ -1,19 +1,14 @@
-
 <!DOCTYPE html>
 <html>
 <head lang="en">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
 
-    <title> (42) + (ZLS) Merged Mining Pool - MinerCountry</title>
-
-    <link rel="icon" type="image/png" sizes="32x32" href="">
-    <link rel="icon" type="image/png" sizes="16x16" href="">
-    <link rel="apple-touch-icon" sizes="180x180" href="">
+    <title>Ombre (OMB) Pool</title>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.3/jquery.timeago.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -27,11 +22,11 @@
 
     <!-- Navigation -->
     <div class="nav-side-menu">
-        <div class="brand"><a href="/"><img src="" alt="42 +  Zelerius (ZLS)" class="img-responsive"> <span id="coinSymbol"></span> + ZLS <span tkey="miningPool">Mining Pool</span></a></div>
-        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+	<div class="brand"><a href="/"><img src="/ombre_logo_medium2.png" style="width:225px;" alt="Moneta Verde" class="img-responsive"> </span>Ombre (OMB) <span tkey="miningPool">Mining Pool</span></a></div>
+	<i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>  
         <div class="menu-list">
             <ul id="menu-content" class="menu-content collapsed out">
-
+        
                 <li><a class="hot_link" data-page="home.html" href="#">
                     <i class="fa fa-home"></i> <span tkey="dashboard">Dashboard</span>
                 </a></li>
@@ -50,24 +45,32 @@
 
                 <li><a class="hot_link" data-page="payments.html" href="#payments">
                     <i class="fa fa-money"></i> <span tkey="payments">Payments</span>
-                </a></li>
+                </a></li>            
 
                 <li><a class="hot_link" data-page="top10miners.html" href="#top10miners">
                     <i class="fa fa-trophy"></i> <span tkey="top10miners">Top 10 miners</span>
                 </a></li>
 
                 <li><a class="hot_link" data-page="market.html" href="#market">
-                    <i class="fa fa-bank"></i> <span tkey="market">Market / Calculator</span>
+                    <i class="fa fa-line-chart"></i> <span tkey="market">Market / Calculator</span>
                 </a></li>
 
-                <li><a class="hot_link" data-page="settings.html" href="#settings">
+		<li><a class="hot_link" data-page="paperwallet.html" href="http://173.212.213.63/ombre-wallet-generator.html" target="_blank">
+                    <i class="fa fa-map-o"></i> <span tkey="paperwallet">Ombre Wallet Generator</span>
+                </a></li>
+		
+		<li><a class="hot_link" data-page="settings.html" href="#settings">
                     <i class="fa fa-gears"></i> <span tkey="settings">Settings</span>
                 </a></li>
 
-                
+                <li><a class="hot_link" data-page="faq.html" href="#faq">
+                    <i class="fa fa-comments"></i> <span tkey="faq">FAQ</span>
+
+                </a></li>
+
             </ul>
         </div>
-
+	
     </div>
 
     <!-- Top Bar -->
@@ -78,45 +81,37 @@
         <div id="section"><span id="statsUpdated"><span tkey="statsUpdated">Stats Updated</span> &nbsp;<i class="fa fa-bolt"></i></span></div>
 	<div id="langSelector"></div>
     </div>
-
+    
     <!-- Page content -->
     <div id="page-wrapper">
         <div id="page"></div>
         <p id="loading" class="text-center"><i class="fa fa-circle-o-notch fa-spin"></i></p>
     </div>
-
+    
 </div>
 
 <!-- Footer -->
 <footer>
     <div class="text-muted">
         <span tkey="poweredBy">Powered by</span> <a target="_blank" href="https://github.com/dvandal/cryptonote-nodejs-pool"><i class="fa fa-github"></i> cryptonote-nodejs-pool</a>
-<span tkey="and powered Merge By">and Merge By</span> <a target="_blank" href="https://github.com/campurro/cryptonote-nodejs-pool.git"><i class="fa fa-github"></i> campurro</a>
-               
-<span id="poolVersion"></span>
+        <span id="poolVersion"></span>
         <span class="hidden-xs"><span tkey="openSource">open sourced under the</span> <a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL</a></span>
     </div>
 </footer>
 
 <!-- Javascript -->
-<script src="config.js?1"></script>
+<script src="config.js"></script>
+<script src="lang/languages.js"></script>
 <script src="js/common.js"></script>
 <script src="js/custom.js"></script>
 <script>
 // Store last pool statistics
 var lastStats;
-var mergedStats; // Merged coin statistics
 
 // Get current miner address
 function getCurrentAddress() {
     var urlWalletAddress = location.search.split('wallet=')[1] || 0;
     var address = urlWalletAddress || docCookies.getItem('mining_address');
-    return address;
-}
-
-function getCurrentAddressMerged() {
-    var urlWalletAddressMerged = location.search.split('walletMerged=')[1] || 0;
-    var address = urlWalletAddressMerged || docCookies.getItem('mining_address_merged');
     return address;
 }
 
@@ -132,51 +127,41 @@ function pulseLiveUpdate(){
 }
 
 // Update live informations
-function updateLiveStats(data, merged) {
-    pulseLiveUpdate();
-    if (merged) {
-        mergedStats = data;
-    } else {
-        lastStats = data;
-        if (lastStats && lastStats.pool && lastStats.pool.totalMinersPaid.toString() == '-1'){
-            lastStats.pool.totalMinersPaid = 0;
-        }
-        updateIndex();
-        if (currentPage) currentPage.update();
+function updateLiveStats(data) {
+    pulseLiveUpdate();   
+    lastStats = data;
+    if (lastStats && lastStats.pool && lastStats.pool.totalMinersPaid.toString() == '-1'){
+        lastStats.pool.totalMinersPaid = 0;
     }
+    updateIndex();
+    if (currentPage) currentPage.update();
 }
 
 // Update global informations
 function updateIndex(){
     updateText('coinSymbol', lastStats.config.symbol);
     updateText('g_networkHashrate', getReadableHashRateString(lastStats.network.difficulty / lastStats.config.coinDifficultyTarget) + '/sec');
-    updateText('g_poolHashrate', getReadableHashRateString(lastStats.pool.hashrate) + '/sec');
+    updateText('g_poolHashrate', getReadableHashRateString(lastStats.pool.hashrate) + '/sec');    
     if (lastStats.miner && lastStats.miner.hashrate){
          updateText('g_userHashrate', getReadableHashRateString(lastStats.miner.hashrate) + '/sec');
     }
     else{
         updateText('g_userHashrate', 'N/A');
-    }
+    }    
     updateText('poolVersion', lastStats.config.version);
 }
 
 // Load live statistics
 function loadLiveStats(reload) {
     var apiURL = api + '/stats';
-    var apiMergedURL = apiMerged + '/stats';
-
+    
     var address = getCurrentAddress();
     if (address) { apiURL = apiURL + '?address=' + encodeURIComponent(address); }
 
     if (xhrLiveStats) xhrLiveStats.abort();
-
-    $.get(apiURL, function(data){
+    
+    $.get(apiURL, function(data){        
         updateLiveStats(data);
-        if (!reload) routePage(fetchLiveStats);
-    });
-
-    $.get(apiMergedURL, function(data){
-        updateLiveStats(data, true);
         if (!reload) routePage(fetchLiveStats);
     });
 }
@@ -188,7 +173,7 @@ function fetchLiveStats() {
 
     var address = getCurrentAddress();
     if (address) { apiURL = apiURL + '?address=' + encodeURIComponent(address); }
-
+    
     xhrLiveStats = $.ajax({
         url: apiURL,
         dataType: 'json',
@@ -206,8 +191,8 @@ $(function(){
     if (themeCss && themeCss != 'themes/default.css') {
         $("head").append("<link rel='stylesheet' href=" + themeCss + ">");
     }
-
-    // Add support informations to menu
+    
+    // Add support informations to menu    
     if (typeof telegram !== 'undefined' && telegram) {
         $('#menu-content').append('<li><a target="_new" href="'+telegram+'"><i class="fa fa-telegram"></i> <span tkey="telegram">Telegram group</span></a></li>');
     }
@@ -221,7 +206,7 @@ $(function(){
         $('#menu-content').append('<div id="mLangSelector"></div>');
 	renderLangSelector();
     }
-
+	
     // Load live statistics for the first time
     loadLiveStats();
 });
